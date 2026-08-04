@@ -1,0 +1,21 @@
+# Lokale Installationsdateien und Werkzeuge
+tools/
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# Maven
+**/target/
+
+# PlatformIO
+**/.pio/
+**/.vscode/
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
