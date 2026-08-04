@@ -8,10 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class SteamLightClientIntegrationTest {
 
     @Test
-    void shouldControlSteamLight() throws Exception {
-        try (SteamLightClient client =
-                     new SteamLightClient("COM3")) {
-
+    void shouldDetectAndControlSteamLight() throws Exception {
+        try (SteamLightClient client = new SteamLightClient()) {
             client.connect();
 
             System.out.println(client.deviceInfo());
