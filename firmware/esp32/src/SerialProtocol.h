@@ -27,6 +27,7 @@ private:
     void sendDeviceInfo(const char* event);
     void sendReady();
     void sendVersion();
+    void sendPong();
 
     void sendOk(const char* message);
     void sendError(const char* message);

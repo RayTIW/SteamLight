@@ -3,13 +3,11 @@ package de.raytiw.steamlight.client;
 import de.raytiw.steamlight.exception.SteamLightException;
 import de.raytiw.steamlight.protocol.ProtocolCodec;
 import de.raytiw.steamlight.protocol.command.*;
-import de.raytiw.steamlight.protocol.response.ReadyEvent;
-import de.raytiw.steamlight.protocol.response.StatusEvent;
+import de.raytiw.steamlight.protocol.response.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fazecast.jSerialComm.SerialPortTimeoutException;
 import java.io.IOException;
-import de.raytiw.steamlight.protocol.response.ResultResponse;
-import de.raytiw.steamlight.protocol.response.VersionEvent;
+
 import de.raytiw.steamlight.serial.SerialConnection;
 import de.raytiw.steamlight.serial.SteamLightPortDetector;
 
@@ -136,6 +134,16 @@ public final class SteamLightClient implements Closeable {
     public ReadyEvent deviceInfo() {
         ensureConnected();
         return deviceInfo;
+    }
+
+    public PongEvent ping() {
+        send(PingCommand.create());
+
+        String json = readUntil(node ->
+                "pong".equals(
+                        node.path("event").asText()));
+
+        return codec.decodePong(json);
     }
 
     private String detectPort() {

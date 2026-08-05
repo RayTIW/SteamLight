@@ -108,6 +108,12 @@ void SerialProtocol::processCommand(
        return;
     }
 
+    if (strcmp(command, "ping") == 0)
+    {
+       sendPong();
+       return;
+    }
+
     if (strcmp(command, "effect") == 0)
     {
         const char* value = document["value"];
@@ -217,4 +223,10 @@ void SerialProtocol::sendError(const char* message)
     Serial.printf(
         "{\"result\":\"error\",\"message\":\"%s\"}\n",
         message);
+}
+
+void SerialProtocol::sendPong()
+{
+    Serial.println(
+        R"({"event":"pong"})");
 }

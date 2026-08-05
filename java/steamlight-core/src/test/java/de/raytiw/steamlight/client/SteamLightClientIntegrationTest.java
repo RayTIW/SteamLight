@@ -1,10 +1,12 @@
 package de.raytiw.steamlight.client;
 
+import de.raytiw.steamlight.protocol.response.PongEvent;
 import de.raytiw.steamlight.protocol.response.StatusEvent;
 import de.raytiw.steamlight.protocol.response.VersionEvent;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SteamLightClientIntegrationTest {
 
@@ -32,6 +34,11 @@ class SteamLightClientIntegrationTest {
 
             assertEquals(25, status.brightness());
             assertEquals(28, status.leds());
+
+            PongEvent pong = client.ping();
+
+            assertEquals("pong", pong.event());
+            assertTrue(pong.isPong());
         }
     }
 }

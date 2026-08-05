@@ -262,15 +262,9 @@ Response
 }
 ```
 
-
-
 ### off
 
-
-
 Request
-
-
 
 ```json
 {
@@ -286,6 +280,19 @@ Response
   "result":"ok",
   "message":"effect_changed"
 }
+```
+
+### ping
+
+Request
+
+```json
+{"cmd":"ping"}
+```
+Response
+
+```json
+{"event":"pong"}
 ```
 
 
