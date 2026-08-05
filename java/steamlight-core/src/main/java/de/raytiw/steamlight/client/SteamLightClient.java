@@ -102,13 +102,24 @@ public final class SteamLightClient implements Closeable {
         receiveResult();
     }
 
-    public void setColor(int red, int green, int blue) {
+    public void setColor(
+            int red,
+            int green,
+            int blue) {
+
         validateColor(red);
         validateColor(green);
         validateColor(blue);
 
         send(ColorCommand.of(red, green, blue));
-        receiveResult();
+
+        ResultResponse response = receiveResult();
+
+        if (!"color_changed".equals(response.message())) {
+            throw new SteamLightException(
+                    "Unerwartete Farbanwort: "
+                            + response.message());
+        }
     }
 
     public StatusEvent status() {

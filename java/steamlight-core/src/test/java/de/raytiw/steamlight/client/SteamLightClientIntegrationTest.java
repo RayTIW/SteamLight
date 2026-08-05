@@ -39,6 +39,17 @@ class SteamLightClientIntegrationTest {
 
             assertEquals("pong", pong.event());
             assertTrue(pong.isPong());
+
+            client.setColor(0, 180, 80);
+            Thread.sleep(1_000);
+
+            client.setColor(255, 0, 0);
+            Thread.sleep(1_000);
+
+            client.setColor(0, 0, 255);
+            Thread.sleep(1_000);
+
+            client.idle();
         }
     }
 }

@@ -184,18 +184,34 @@ Response
 
 
 ```json
-
 {
-
  "result":"ok",
-
  "message":"brightness_changed"
-
 }
 
 ```
 
+### color
 
+Request
+
+```json
+{
+  "cmd":"color",
+  "r":0,
+  "g":180,
+  "b":80
+}
+```
+
+Response
+
+```json
+{
+  "result":"ok",
+  "message":"color_changed"
+}
+```
 
 ### Effect
 
@@ -319,9 +335,10 @@ Response
 | missing_effect | value fehlt |
 | unknown_effect | unbekannter Effekt |
 | invalid_json | JSON konnte nicht gelesen werden |
-
-# missing_cmd
-
+| invalid_color | falsche Farbe |
+| color_out_of_range | Wertebereich der Farbe ueberschritten |
+ 
+ # missing_cmd
 
 
 ```json
