@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.raytiw.steamlight.protocol.response.ReadyEvent;
 import de.raytiw.steamlight.protocol.response.ResultResponse;
 import de.raytiw.steamlight.protocol.response.StatusEvent;
+import de.raytiw.steamlight.protocol.response.VersionEvent;
 
 public final class ProtocolCodec {
 
@@ -37,6 +38,10 @@ public final class ProtocolCodec {
 
     public StatusEvent decodeStatus(String json) {
         return decode(json, StatusEvent.class);
+    }
+
+    public VersionEvent decodeVersion(String json) {
+        return decode(json, VersionEvent.class);
     }
 
     public ResultResponse decodeResult(String json) {

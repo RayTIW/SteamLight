@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fazecast.jSerialComm.SerialPortTimeoutException;
 import java.io.IOException;
 import de.raytiw.steamlight.protocol.response.ResultResponse;
+import de.raytiw.steamlight.protocol.response.VersionEvent;
 import de.raytiw.steamlight.serial.SerialConnection;
 import de.raytiw.steamlight.serial.SteamLightPortDetector;
 
@@ -120,6 +121,16 @@ public final class SteamLightClient implements Closeable {
                         node.path("event").asText()));
 
         return codec.decodeStatus(json);
+    }
+
+    public VersionEvent version() {
+        send(VersionCommand.create());
+
+        String json = readUntil(node ->
+                "version".equals(
+                        node.path("event").asText()));
+
+        return codec.decodeVersion(json);
     }
 
     public ReadyEvent deviceInfo() {
