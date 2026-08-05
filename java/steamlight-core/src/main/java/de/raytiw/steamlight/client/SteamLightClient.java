@@ -3,12 +3,11 @@ package de.raytiw.steamlight.client;
 import de.raytiw.steamlight.exception.SteamLightException;
 import de.raytiw.steamlight.protocol.ProtocolCodec;
 import de.raytiw.steamlight.protocol.command.*;
-import de.raytiw.steamlight.protocol.response.ReadyEvent;
-import de.raytiw.steamlight.protocol.response.StatusEvent;
+import de.raytiw.steamlight.protocol.response.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fazecast.jSerialComm.SerialPortTimeoutException;
 import java.io.IOException;
-import de.raytiw.steamlight.protocol.response.ResultResponse;
+
 import de.raytiw.steamlight.serial.SerialConnection;
 import de.raytiw.steamlight.serial.SteamLightPortDetector;
 
@@ -103,13 +102,24 @@ public final class SteamLightClient implements Closeable {
         receiveResult();
     }
 
-    public void setColor(int red, int green, int blue) {
+    public void setColor(
+            int red,
+            int green,
+            int blue) {
+
         validateColor(red);
         validateColor(green);
         validateColor(blue);
 
         send(ColorCommand.of(red, green, blue));
-        receiveResult();
+
+        ResultResponse response = receiveResult();
+
+        if (!"color_changed".equals(response.message())) {
+            throw new SteamLightException(
+                    "Unerwartete Farbanwort: "
+                            + response.message());
+        }
     }
 
     public StatusEvent status() {
@@ -122,9 +132,47 @@ public final class SteamLightClient implements Closeable {
         return codec.decodeStatus(json);
     }
 
+    public VersionEvent version() {
+        send(VersionCommand.create());
+
+        String json = readUntil(node ->
+                "version".equals(
+                        node.path("event").asText()));
+
+        return codec.decodeVersion(json);
+    }
+
     public ReadyEvent deviceInfo() {
         ensureConnected();
         return deviceInfo;
+    }
+
+    public PongEvent ping() {
+        send(PingCommand.create());
+
+        String json = readUntil(node ->
+                "pong".equals(
+                        node.path("event").asText()));
+
+        return codec.decodePong(json);
+    }
+
+    public void reboot() {
+        send(RebootCommand.create());
+
+        ResultResponse response = receiveResult();
+
+        if (!"rebooting".equals(response.message())) {
+            throw new SteamLightException(
+                    "Unerwartete Reboot-Antwort: "
+                            + response.message());
+        }
+
+        /*
+         * Der ESP trennt die Verbindung beim Neustart.
+         * Deshalb den lokalen Verbindungszustand ebenfalls schließen.
+         */
+        closeQuietly();
     }
 
     private String detectPort() {

@@ -3,9 +3,7 @@ package de.raytiw.steamlight.protocol;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.raytiw.steamlight.protocol.response.ReadyEvent;
-import de.raytiw.steamlight.protocol.response.ResultResponse;
-import de.raytiw.steamlight.protocol.response.StatusEvent;
+import de.raytiw.steamlight.protocol.response.*;
 
 public final class ProtocolCodec {
 
@@ -37,6 +35,14 @@ public final class ProtocolCodec {
 
     public StatusEvent decodeStatus(String json) {
         return decode(json, StatusEvent.class);
+    }
+
+    public VersionEvent decodeVersion(String json) {
+        return decode(json, VersionEvent.class);
+    }
+
+    public PongEvent decodePong(String json) {
+        return decode(json, PongEvent.class);
     }
 
     public ResultResponse decodeResult(String json) {

@@ -12,10 +12,28 @@ void SerialProtocol::begin()
     sendReady();
 }
 
+void SerialProtocol::sendDeviceInfo(const char* event)
+{
+    JsonDocument doc;
+
+    doc["event"] = event;
+    doc["device"] = "SteamLight";
+    doc["version"] = "0.3.0";
+    doc["protocol"] = 1;
+    doc["leds"] = NUM_LEDS;
+
+    serializeJson(doc, Serial);
+    Serial.println();
+}
+
 void SerialProtocol::sendReady()
 {
-    Serial.println(
-        R"({"event":"ready","device":"SteamLight","version":"0.3.0","protocol":1,"leds":28})");
+    sendDeviceInfo("ready");
+}
+
+void SerialProtocol::sendVersion()
+{
+    sendDeviceInfo("version");
 }
 
 void SerialProtocol::update(
@@ -82,6 +100,30 @@ void SerialProtocol::processCommand(
     {
         sendReady();
         return;
+    }
+
+    if (strcmp(command, "version") == 0)
+    {
+       sendVersion();
+       return;
+    }
+
+    if (strcmp(command, "ping") == 0)
+    {
+       sendPong();
+       return;
+    }
+
+    if (strcmp(command, "reboot") == 0)
+    {
+       sendOk("rebooting");
+
+       // wait until answer is send.
+       Serial.flush();
+       delay(100);
+
+       ESP.restart();
+       return;
     }
 
     if (strcmp(command, "effect") == 0)
@@ -194,3 +236,10 @@ void SerialProtocol::sendError(const char* message)
         "{\"result\":\"error\",\"message\":\"%s\"}\n",
         message);
 }
+
+void SerialProtocol::sendPong()
+{
+    Serial.println(
+        R"({"event":"pong"})");
+}
+

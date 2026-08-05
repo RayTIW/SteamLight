@@ -1,9 +1,12 @@
 package de.raytiw.steamlight.client;
 
+import de.raytiw.steamlight.protocol.response.PongEvent;
 import de.raytiw.steamlight.protocol.response.StatusEvent;
+import de.raytiw.steamlight.protocol.response.VersionEvent;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SteamLightClientIntegrationTest {
 
@@ -12,7 +15,13 @@ class SteamLightClientIntegrationTest {
         try (SteamLightClient client = new SteamLightClient()) {
             client.connect();
 
-            System.out.println(client.deviceInfo());
+            VersionEvent version = client.version();
+
+            assertEquals("version", version.event());
+            assertEquals("SteamLight", version.device());
+            assertEquals("0.3.0", version.version());
+            assertEquals(1, version.protocol());
+            assertEquals(28, version.leds());
 
             client.setBrightness(25);
             client.boot();
@@ -25,6 +34,22 @@ class SteamLightClientIntegrationTest {
 
             assertEquals(25, status.brightness());
             assertEquals(28, status.leds());
+
+            PongEvent pong = client.ping();
+
+            assertEquals("pong", pong.event());
+            assertTrue(pong.isPong());
+
+            client.setColor(0, 180, 80);
+            Thread.sleep(1_000);
+
+            client.setColor(255, 0, 0);
+            Thread.sleep(1_000);
+
+            client.setColor(0, 0, 255);
+            Thread.sleep(1_000);
+
+            client.idle();
         }
     }
 }
