@@ -3,6 +3,7 @@ package de.raytiw.steamlight.daemon;
 import de.raytiw.steamlight.client.SteamLightClient;
 import de.raytiw.steamlight.daemon.event.SteamEvent;
 import de.raytiw.steamlight.daemon.event.SteamEventDispatcher;
+import de.raytiw.steamlight.daemon.steam.SteamProcessDetector;
 import de.raytiw.steamlight.protocol.response.VersionEvent;
 
 import java.time.Duration;
@@ -17,6 +18,9 @@ public final class ConnectionSupervisor {
 
     private final SteamEventDispatcher eventDispatcher =
             new SteamEventDispatcher();
+
+    private final SteamProcessDetector steamDetector =
+            new SteamProcessDetector();
 
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
@@ -59,11 +63,22 @@ public final class ConnectionSupervisor {
     }
 
     private void monitorConnection(SteamLightClient client) {
-        while (!Thread.currentThread().isInterrupted()) {
-            client.ping();
-            logInfo("Ping OK");
+        long nextPingAt = 0;
 
-            sleep(PING_INTERVAL);
+        while (!Thread.currentThread().isInterrupted()) {
+            long now = System.nanoTime();
+
+            steamDetector.poll().ifPresent(event ->
+                    eventDispatcher.dispatch(event, client));
+
+            if (now >= nextPingAt) {
+                client.ping();
+                logInfo("Ping OK");
+
+                nextPingAt = now + PING_INTERVAL.toNanos();
+            }
+
+            sleep(Duration.ofMillis(500));
         }
     }
 
@@ -96,4 +111,5 @@ public final class ConnectionSupervisor {
     private static void logWarning(String message) {
         System.err.println("[WARN] " + message);
     }
+
 }

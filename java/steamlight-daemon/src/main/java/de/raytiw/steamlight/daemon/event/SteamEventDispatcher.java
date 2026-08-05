@@ -1,6 +1,7 @@
 package de.raytiw.steamlight.daemon.event;
 
 import de.raytiw.steamlight.client.SteamLightClient;
+import de.raytiw.steamlight.daemon.steam.SteamProcessDetector;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -20,10 +21,10 @@ public final class SteamEventDispatcher {
         System.out.println("[INFO] Steam-Ereignis: " + event);
 
         switch (event) {
-            case STARTUP -> handleStartup(client);
+            case STARTUP, STEAM_STARTED -> handleStartup(client);
+            case STEAM_STOPPED, SUSPEND, SHUTDOWN -> client.off();
             case GAME_STARTED -> client.boot();
             case GAME_STOPPED -> client.idle();
-            case SUSPEND, SHUTDOWN -> client.off();
         }
     }
 
@@ -40,4 +41,6 @@ public final class SteamEventDispatcher {
             Thread.currentThread().interrupt();
         }
     }
+
+
 }
