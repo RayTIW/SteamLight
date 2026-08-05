@@ -295,6 +295,20 @@ Response
 {"event":"pong"}
 ```
 
+### reboot
+
+Request
+
+```json
+{"cmd":"reboot"}
+```
+Response
+```json
+{
+  "result":"ok",
+  "message":"rebooting"
+}
+```
 
 ## Error Codes
 

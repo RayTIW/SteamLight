@@ -114,6 +114,18 @@ void SerialProtocol::processCommand(
        return;
     }
 
+    if (strcmp(command, "reboot") == 0)
+    {
+       sendOk("rebooting");
+
+       // wait until answer is send.
+       Serial.flush();
+       delay(100);
+
+       ESP.restart();
+       return;
+    }
+
     if (strcmp(command, "effect") == 0)
     {
         const char* value = document["value"];
@@ -230,3 +242,4 @@ void SerialProtocol::sendPong()
     Serial.println(
         R"({"event":"pong"})");
 }
+

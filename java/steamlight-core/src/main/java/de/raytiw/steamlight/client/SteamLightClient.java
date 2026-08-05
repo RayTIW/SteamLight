@@ -146,6 +146,24 @@ public final class SteamLightClient implements Closeable {
         return codec.decodePong(json);
     }
 
+    public void reboot() {
+        send(RebootCommand.create());
+
+        ResultResponse response = receiveResult();
+
+        if (!"rebooting".equals(response.message())) {
+            throw new SteamLightException(
+                    "Unerwartete Reboot-Antwort: "
+                            + response.message());
+        }
+
+        /*
+         * Der ESP trennt die Verbindung beim Neustart.
+         * Deshalb den lokalen Verbindungszustand ebenfalls schließen.
+         */
+        closeQuietly();
+    }
+
     private String detectPort() {
         return new SteamLightPortDetector(codec)
                 .detect()
