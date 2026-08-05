@@ -1,6 +1,8 @@
 package de.raytiw.steamlight.daemon;
 
 import de.raytiw.steamlight.client.SteamLightClient;
+import de.raytiw.steamlight.daemon.event.SteamEvent;
+import de.raytiw.steamlight.daemon.event.SteamEventDispatcher;
 import de.raytiw.steamlight.protocol.response.VersionEvent;
 
 import java.time.Duration;
@@ -12,6 +14,9 @@ public final class ConnectionSupervisor {
 
     private static final Duration RECONNECT_DELAY =
             Duration.ofSeconds(5);
+
+    private final SteamEventDispatcher eventDispatcher =
+            new SteamEventDispatcher();
 
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
@@ -39,6 +44,10 @@ public final class ConnectionSupervisor {
                                     version.version(),
                                     version.protocol(),
                                     version.leds()));
+
+            eventDispatcher.dispatch(
+                    SteamEvent.STARTUP,
+                    client);
 
             monitorConnection(client);
 
