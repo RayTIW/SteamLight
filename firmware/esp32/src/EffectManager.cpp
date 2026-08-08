@@ -27,23 +27,35 @@ void EffectManager::setEffect(EffectType effect, LedController& leds)
 
     currentType = effect;
 
-    switch (currentType)
-    {
-        case EffectType::BOOT:
-            currentEffect = &bootEffect;
-            break;
+switch (currentType)
+{
+    case EffectType::BOOT:
+        currentEffect = &bootEffect;
+        break;
 
-        case EffectType::IDLE:
-            currentEffect = &idleEffect;
-            break;
+    case EffectType::IDLE:
+        currentEffect = &idleEffect;
+        break;
 
-        case EffectType::OFF:
-            currentEffect = &offEffect;
-            break;
+    case EffectType::GAME:
+        currentEffect = &gameEffect;
+        break;
 
-        case EffectType::STATIC_COLOR:
-            currentEffect = &staticColorEffect;
-            break;
+    case EffectType::SLEEP:
+        currentEffect = &sleepEffect;
+        break;
+
+    case EffectType::ERROR:
+        currentEffect = &errorEffect;
+        break;
+
+    case EffectType::OFF:
+        currentEffect = &offEffect;
+        break;
+
+    case EffectType::STATIC_COLOR:
+        currentEffect = &staticColorEffect;
+        break;
     }
 
     startCurrentEffect(leds);

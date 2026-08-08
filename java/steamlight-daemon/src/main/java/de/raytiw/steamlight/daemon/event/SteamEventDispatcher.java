@@ -22,8 +22,9 @@ public final class SteamEventDispatcher {
 
         switch (event) {
             case STARTUP, STEAM_STARTED -> handleStartup(client);
-            case STEAM_STOPPED, SUSPEND, SHUTDOWN -> client.off();
-            case GAME_STARTED -> client.boot();
+            case STEAM_STOPPED, SHUTDOWN -> client.off();
+            case SUSPEND -> client.sleep();
+            case GAME_STARTED -> client.game();
             case GAME_STOPPED -> client.idle();
         }
     }

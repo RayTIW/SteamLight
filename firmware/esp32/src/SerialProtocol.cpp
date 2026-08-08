@@ -128,35 +128,76 @@ void SerialProtocol::processCommand(
 
     if (strcmp(command, "effect") == 0)
     {
-        const char* value = document["value"];
+       const char* value = document["value"];
 
-        if (value == nullptr)
-        {
-            sendError("missing_effect");
-            return;
-        }
+       if (value == nullptr)
+       {
+           sendError("missing_effect");
+           return;
+       }
 
-   
-        if (strcmp(value, "boot") == 0)
-        {
-            effectManager.setEffect(EffectType::BOOT, leds);
-        }
-        else if (strcmp(value, "idle") == 0)
-        {
-            effectManager.setEffect(EffectType::IDLE, leds);
-        }
-        else if (strcmp(value, "off") == 0)
-        {
-            effectManager.setEffect(EffectType::OFF, leds);
-        }
-        else
-        {
-            sendError("unknown_effect");
-            return;
-        }
+       if (strcmp(value, "boot") == 0)
+       {
+           effectManager.setEffect(
+               EffectType::BOOT,
+               leds);
 
-        sendOk("effect_changed");
-        return;
+           sendOk("effect_changed");
+           return;
+       }
+
+       if (strcmp(value, "idle") == 0)
+       {
+           effectManager.setEffect(
+               EffectType::IDLE,
+               leds);
+
+           sendOk("effect_changed");
+           return;
+       }
+
+       if (strcmp(value, "game") == 0)
+       {
+           effectManager.setEffect(
+               EffectType::GAME,
+               leds);
+
+           sendOk("effect_changed");
+           return;
+       }
+
+       if (strcmp(value, "sleep") == 0)
+       {
+           effectManager.setEffect(
+               EffectType::SLEEP,
+               leds);
+
+           sendOk("effect_changed");
+           return;
+       }
+
+       if (strcmp(value, "error") == 0)
+       {
+           effectManager.setEffect(
+               EffectType::ERROR,
+               leds);
+
+           sendOk("effect_changed");
+           return;
+       }
+
+       if (strcmp(value, "off") == 0)
+       {
+           effectManager.setEffect(
+               EffectType::OFF,
+               leds);
+
+           sendOk("effect_changed");
+           return;
+       }
+
+       sendError("unknown_effect");
+       return;
     }
 
     if (strcmp(command, "brightness") == 0)

@@ -48,6 +48,14 @@ class SteamLightClientIntegrationTest {
 
             client.setColor(0, 0, 255);
             Thread.sleep(1_000);
+            client.game();
+            Thread.sleep(1500);
+
+            client.sleep();
+            Thread.sleep(1500);
+
+            client.error();
+            Thread.sleep(1500);
 
             client.idle();
         }
