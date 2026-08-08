@@ -83,6 +83,19 @@ public final class SteamLightClient implements Closeable {
         setEffect(Effect.IDLE);
     }
 
+    public void game() {
+        setEffect(Effect.GAME);
+    }
+
+    public void sleep() {
+        setEffect(Effect.SLEEP);
+    }
+
+    public void error() {
+        setEffect(Effect.ERROR);
+    }
+
+
     public void off() {
         setEffect(Effect.OFF);
     }

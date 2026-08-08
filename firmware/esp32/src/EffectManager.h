@@ -2,6 +2,9 @@
 
 #include "BootEffect.h"
 #include "IdleEffect.h"
+#include "GameEffect.h"
+#include "SleepEffect.h"
+#include "ErrorEffect.h"
 #include "LedController.h"
 #include "OffEffect.h"
 #include "StaticColorEffect.h"
@@ -10,6 +13,9 @@ enum class EffectType
 {
     BOOT,
     IDLE,
+    GAME,
+    SLEEP,
+    ERROR,
     OFF,
     STATIC_COLOR
 };
@@ -31,6 +37,9 @@ private:
 
     BootEffect bootEffect;
     IdleEffect idleEffect;
+    GameEffect gameEffect;
+    SleepEffect sleepEffect;
+    ErrorEffect errorEffect;
     OffEffect offEffect;
     StaticColorEffect staticColorEffect;
 };
