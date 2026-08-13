@@ -7,5 +7,6 @@ public enum SteamEvent {
     GAME_STARTED,
     GAME_STOPPED,
     SUSPEND,
+    RESUME,
     SHUTDOWN
 }

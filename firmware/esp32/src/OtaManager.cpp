@@ -1,6 +1,5 @@
 #include "OtaManager.h"
 
-#include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <WiFi.h>
 
@@ -13,8 +12,41 @@ namespace
 
 void OtaManager::begin()
 {
-    connectWifi();
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
+    Serial.println("WiFi: connection started");
+}
+
+void OtaManager::update()
+{
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        if (!otaStarted)
+        {
+            startOta();
+        }
+
+        ArduinoOTA.handle();
+        return;
+    }
+
+    otaStarted = false;
+
+    const unsigned long now = millis();
+
+    if (now - lastReconnectAttempt >= RECONNECT_INTERVAL_MS)
+    {
+        lastReconnectAttempt = now;
+
+        Serial.println("WiFi: reconnecting");
+        WiFi.disconnect();
+        WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    }
+}
+
+void OtaManager::startOta()
+{
     ArduinoOTA.setHostname(OTA_HOSTNAME);
 
     ArduinoOTA
@@ -46,49 +78,31 @@ void OtaManager::begin()
 
     ArduinoOTA.begin();
 
+    otaStarted = true;
+
+    Serial.println();
+
+    Serial.print("WiFi: connected, IP=");
+    Serial.println(WiFi.localIP());
+
+    Serial.print("Status: ");
+    Serial.println(WiFi.status());
+
     Serial.print("OTA: ready at ");
     Serial.print(OTA_HOSTNAME);
-    Serial.print(".local / ");
-    Serial.println(WiFi.localIP());
-}
+    Serial.println(".local");
 
-void OtaManager::update()
-{
-    ArduinoOTA.handle();
-}
+    Serial.print("Gateway: ");
 
-void OtaManager::connectWifi()
-{
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(
-        WIFI_SSID,
-        WIFI_PASSWORD);
+    Serial.println(WiFi.gatewayIP());
 
-    Serial.print("WiFi: connecting");
+    Serial.print("Subnet: ");
+    Serial.println(WiFi.subnetMask());
 
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
+    Serial.print("MAC: ");
+    Serial.println(WiFi.macAddress());
 
- Serial.println();
+    Serial.print("RSSI: ");
+    Serial.println(WiFi.RSSI());
 
- Serial.print("Status: ");
- Serial.println(WiFi.status());
-
- Serial.print("IP: ");
- Serial.println(WiFi.localIP());
-
- Serial.print("Gateway: ");
- Serial.println(WiFi.gatewayIP());
-
- Serial.print("Subnet: ");
- Serial.println(WiFi.subnetMask());
-
- Serial.print("MAC: ");
- Serial.println(WiFi.macAddress());
-
- Serial.print("RSSI: ");
- Serial.println(WiFi.RSSI());
 }

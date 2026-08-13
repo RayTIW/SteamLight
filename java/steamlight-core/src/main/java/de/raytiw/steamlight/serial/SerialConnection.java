@@ -75,6 +75,7 @@ public final class SerialConnection implements Closeable {
     public void send(String json) throws IOException {
         writer.write(json);
         writer.write('\n');
+
         writer.flush();
 
         System.out.println("Sende: " + json);
