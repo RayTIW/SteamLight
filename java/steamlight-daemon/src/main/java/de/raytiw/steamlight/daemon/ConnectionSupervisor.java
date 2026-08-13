@@ -3,17 +3,23 @@ package de.raytiw.steamlight.daemon;
 import de.raytiw.steamlight.client.SteamLightClient;
 import de.raytiw.steamlight.daemon.event.SteamEvent;
 import de.raytiw.steamlight.daemon.event.SteamEventDispatcher;
+import de.raytiw.steamlight.daemon.sleep.SleepDetector;
 import de.raytiw.steamlight.daemon.steam.RunningGame;
 import de.raytiw.steamlight.daemon.steam.SteamGameDetector;
 import de.raytiw.steamlight.daemon.steam.SteamProcessDetector;
 import de.raytiw.steamlight.protocol.response.VersionEvent;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
-public final class ConnectionSupervisor {
+public final class ConnectionSupervisor implements Runnable{
 
     private RunningGame runningGame;
+
+    private volatile boolean shutdownRequested;
+
+    private volatile SteamLightClient activeClient;
 
     private final SteamGameDetector gameDetector =
             new SteamGameDetector();
@@ -30,11 +36,17 @@ public final class ConnectionSupervisor {
     private final SteamProcessDetector steamDetector =
             new SteamProcessDetector();
 
+    private final SleepDetector sleepDetector =
+            new SleepDetector();
+
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!shutdownRequested
+                && !Thread.currentThread().isInterrupted()) {
+
             runConnectionSession();
 
-            if (!Thread.currentThread().isInterrupted()) {
+            if (!shutdownRequested
+                    && !Thread.currentThread().isInterrupted()) {
                 sleep(RECONNECT_DELAY);
             }
         }
@@ -47,21 +59,26 @@ public final class ConnectionSupervisor {
 
         try (SteamLightClient client = new SteamLightClient()) {
             client.connect();
+            activeClient = client;
+            try {
+                VersionEvent version = client.version();
 
-            VersionEvent version = client.version();
+                logInfo(
+                        "SteamLight verbunden: Firmware %s, Protokoll %d, LEDs %d"
+                                .formatted(
+                                        version.version(),
+                                        version.protocol(),
+                                        version.leds()));
 
-            logInfo(
-                    "SteamLight verbunden: Firmware %s, Protokoll %d, LEDs %d"
-                            .formatted(
-                                    version.version(),
-                                    version.protocol(),
-                                    version.leds()));
+                eventDispatcher.dispatch(
+                        SteamEvent.STARTUP,
+                        client);
 
-            eventDispatcher.dispatch(
-                    SteamEvent.STARTUP,
-                    client);
+                monitorConnection(client);
 
-            monitorConnection(client);
+            } finally {
+                activeClient = null;
+            }
 
         } catch (Exception exception) {
             logWarning(
@@ -74,9 +91,34 @@ public final class ConnectionSupervisor {
 
         long nextPingAt = 0;
 
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!shutdownRequested
+                && !Thread.currentThread().isInterrupted()) {
 
             long now = System.nanoTime();
+
+            // -----------------------------
+            // Suspend
+            // -----------------------------
+
+            try {
+                sleepDetector.poll().ifPresent(event -> {
+
+                    logInfo(event == SteamEvent.SUSPEND
+                            ? "Suspend erkannt."
+                            : "Resume erkannt.");
+
+                    if (event == SteamEvent.RESUME) {
+                        restoreLedState(client);
+                    } else {
+                        eventDispatcher.dispatch(event, client);
+                    }
+                });
+
+            } catch (IOException exception) {
+                logWarning(
+                        "Suspend-Status konnte nicht ermittelt werden: "
+                                + rootMessage(exception));
+            }
 
             // -----------------------------
             // Steam gestartet / beendet
@@ -146,8 +188,13 @@ public final class ConnectionSupervisor {
                 nextPingAt = now + PING_INTERVAL.toNanos();
             }
 
-            sleep(Duration.ofMillis(500));
+            sleep(Duration.ofMillis(200));
         }
+
+     }
+
+    public void shutdown() {
+        shutdownRequested = true;
     }
 
     private static void sleep(Duration duration) {
@@ -180,4 +227,47 @@ public final class ConnectionSupervisor {
         System.err.println("[WARN] " + message);
     }
 
+    public void switchOffSteamLight() {
+        SteamLightClient client = activeClient;
+
+        if (client == null) {
+            return;
+        }
+
+        logInfo("Schalte SteamLight aus.");
+
+        try {
+            client.off();
+        } catch (Exception exception) {
+            logWarning(
+                    "SteamLight konnte nicht ausgeschaltet werden: "
+                            + rootMessage(exception));
+        }
+    }
+
+    private void restoreLedState(SteamLightClient client) {
+
+        Optional<RunningGame> detectedGame =
+                gameDetector.findRunningGame();
+
+        if (detectedGame.isPresent()) {
+            runningGame = detectedGame.get();
+
+            logInfo("Stelle Game-Zustand wieder her: AppID "
+                    + runningGame.appId());
+
+            eventDispatcher.dispatch(
+                    SteamEvent.GAME_STARTED,
+                    client);
+
+        } else {
+            runningGame = null;
+
+            logInfo("Stelle Idle-Zustand wieder her.");
+
+            eventDispatcher.dispatch(
+                    SteamEvent.GAME_STOPPED,
+                    client);
+        }
+    }
 }

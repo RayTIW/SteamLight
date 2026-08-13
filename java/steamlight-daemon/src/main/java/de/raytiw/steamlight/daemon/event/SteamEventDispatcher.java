@@ -26,6 +26,9 @@ public final class SteamEventDispatcher {
             case SUSPEND -> client.sleep();
             case GAME_STARTED -> client.game();
             case GAME_STOPPED -> client.idle();
+            case RESUME -> {
+                // Zustand wird vom ConnectionSupervisor wiederhergestellt.
+            }
         }
     }
 
