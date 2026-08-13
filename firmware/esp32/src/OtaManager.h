@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Arduino.h>
+
 class OtaManager
 {
 public:
@@ -7,5 +9,10 @@ public:
     void update();
 
 private:
-    void connectWifi();
+    void startOta();
+
+    bool otaStarted = false;
+    unsigned long lastReconnectAttempt = 0;
+
+    static constexpr unsigned long RECONNECT_INTERVAL_MS = 5000;
 };
