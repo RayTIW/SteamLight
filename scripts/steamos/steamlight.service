@@ -1,0 +1,13 @@
+[Unit]
+Description=SteamLight Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/steamlight/scripts/start.sh
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+
+[Install]
+WantedBy=default.target
